@@ -22,33 +22,27 @@ public class AnalitzadorPrincipal {
             Process processWarning = pbWarning.start();
 
             String text = "ERROR lga eWARNINGgegea\n lga egeERRORgea\n gesh hojWARNINGWARNINGta eERRORa roahreaj";
-            BufferedWriter outE = new BufferedWriter(new OutputStreamWriter(processError.getOutputStream()));
-            outE.write(text);
-            outE.flush();
-            outE.close();
+            try(BufferedWriter outE = new BufferedWriter(new OutputStreamWriter(processError.getOutputStream()));
+                BufferedWriter outW = new BufferedWriter(new OutputStreamWriter(processWarning.getOutputStream()))) {   
+                outE.write(text);
+                outE.flush();
+                outW.write(text);
+                outW.flush();
+            }
 
-            BufferedWriter outW = new BufferedWriter(new OutputStreamWriter(processWarning.getOutputStream()));
-            outW.write(text);
-            outW.flush();
-            outW.close();
+            String respuestaE;
+            String respuestaW;
+            try(BufferedReader inE = new BufferedReader(new InputStreamReader(processError.getInputStream()));
+                BufferedReader inW = new BufferedReader(new InputStreamReader(processWarning.getInputStream()))) {
+                respuestaE = inE.readLine();
+                respuestaW = inW.readLine();
+            }
 
-            BufferedReader inE = new BufferedReader(new InputStreamReader(processError.getInputStream()));
-            String respuestaE = inE.readLine();
-            inE.close();
-
-            BufferedReader inW = new BufferedReader(new InputStreamReader(processWarning.getInputStream()));
-            String respuestaW = inW.readLine();
-            inW.close();
-
-            processError.waitFor();
-            processWarning.waitFor();
-
-            int exitEr = processError.exitValue();
-            int exitWa = processWarning.exitValue();
+            int exitEr = processError.waitFor();
+            int exitWa = processWarning.waitFor();
             int exitTo = (exitEr == 0 && exitWa == 0) ? 0 : 1;
 
-            System.out
-                    .println("RESULTAT: ERRORS=" + respuestaE + " | WARNINGS=" + respuestaW + " | EXIT_CODE=" + exitTo);
+            System.out.println("RESULTAT: ERRORS=" + respuestaE + " | WARNINGS=" + respuestaW + " | EXIT_CODE=" + exitTo);
 
         } catch (IOException | InterruptedException e) {
             System.out.println(e.getMessage());
